@@ -1,0 +1,33 @@
+---
+title: "Project Milestone 1"
+format: html
+editor: visual
+---
+
+-   **Project option selection**
+
+    -   Scenario 3: Environment and asthma in California
+
+-   **Create git repository**
+
+    -   https://github.com/emfliu/ph251_project
+
+-   **Roles and responsibilities**
+
+    -   **Team's preferred communication method** 
+
+        -   Default email; urgent text (Emily: 714-686-8374; Liza: 202-494-0330)
+
+    -   **Team's preferred meeting times and frequency** 
+
+        -   Wednesdays at 12:30/1 PM at BWW, weekly
+
+        -   More or less as needed
+
+    -   **Team's preferred method for tracking progress**
+
+        -   Shared notes (google doc) with agenda and issues/challenges
+
+    -   **Point person for contacting course facilitators with questions**
+
+        -   Liza and Emily will share communication responsibilities
