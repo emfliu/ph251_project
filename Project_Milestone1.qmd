@@ -2,6 +2,7 @@
 title: "Project Milestone 1"
 format: html
 editor: visual
+author: Emily Liu & Liza Lutzker
 ---
 
 -   **Project option selection**
