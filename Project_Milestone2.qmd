@@ -1,0 +1,114 @@
+---
+title: "Project Milestone 2"
+author: "Emily Liu & Liza Lutzker"
+format: html
+editor: visual
+---
+
+## Description of the datasets
+
+### What is the data source? (1-2 sentences on where the data is coming from, dates included, etc.)
+
+-   Dataset 1 (calenviroscreen_measures_2021.csv) contains multiple specific environmental measures and Dataset 2 (calenviroscreen_scores_demog_2021.csv) contains overall CalEnviroScreen (CES) scores and demographics. Both are from CalEnviroScreen, provide data at the census-tract level (accompanied by county of tract location), and use 2019 ACS estimates for demographics. 
+
+-   Dataset 3 (chhs_asthma_ed.csv) is from CA Health and Human Services Dept and has annual age-adjusted asthma ED visits/rates by county from 2015 through 2020. 
+
+### How does the dataset relate to the group problem statement and question?
+
+Dataset 3 provides outcome data (acute asthma as defined by asthma ED visit). Dataset 1 provides the exposure data related to the "specific environmental measures" to be examined, while dataset 2 provides the exposure data for the "county CES measure" to be examined, as well as the population subgroups that might be important to stratify by.
+
+# Read in Data files
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+getwd()
+
+#bring in files and clean up column names
+ed <- read.csv('../Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
+  clean_names()
+demog <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% 
+  clean_names()
+ces <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% 
+  clean_names()
+
+#take a look at columns in each file
+head(ed)
+head(demog)
+head(ces)
+
+#get a sense of numeric variables in each file
+summary(ed)
+summary(demog)
+summary(ces)
+
+#take a look at county names more closely as we need to merge with them and they must be consistent across files
+str(ed) 
+levels(as.factor(ed$county))
+str(demog) #note: county names here are Sentence Case while in ed file they are CAPITALIZED
+#Also, in demog, they contain the word "County" while not in ed, and no "CALIFORNIA" in demog
+levels(as.factor(demog$county))
+str(ces) #here, county is just Capital of county name name, no "County" and variable is named "california_county"
+levels(as.factor(ces$california_county))
+
+```
+
+# Examining Data Elements
+
+```{r}
+#Identify 5+ data elements required for your specified scenario. Determine the types and the desired type/format for each variable
+#Provide basic description of these 5+ elements (summary stats)
+
+#We'll look at: 1) demog$ces_4_0_score, 2) county (demog$county, ed$county, ces$california_county, 3) ed$age_adjusted_ed_visit_rate, 4) ed$year, 5) ces$traffic, 6) ces$pm2_5
+
+#first look at class and type of these variables
+class(demog$ces_4_0_score)
+typeof(demog$ces_4_0_score)
+class(demog$county)
+typeof(demog$county)
+class(ed$county)
+typeof(ed$county)
+class(ces$california_county)
+typeof(ces$california_county)
+class(ed$age_adjusted_ed_visit_rate)
+typeof(ed$age_adjusted_ed_visit_rate)
+class(ed$year)
+typeof(ed$year)
+class(ces$traffic)
+typeof(ces$traffic)
+class(ces$pm2_5)
+typeof(ces$pm2_5)
+#all measures above look like they are of appropriate type 
+#in some cases we may want to use year as categorical, but keep as numeric for now
+
+#now calcualte summary stats for all of the above
+
+#county
+levels(as.factor(ed$county))
+levels(as.factor(demog$county))
+levels(as.factor(ces$california_county))
+
+length(unique(as.factor(ed$county)))
+length(unique(as.factor(demog$county)))
+length(unique(as.factor(ces$california_county)))
+
+#CES score
+summary(demog$ces_4_0_score)
+
+#ED visit rates
+summary(ed$age_adjusted_ed_visit_rate)
+
+#year of ED visit - look at as numeric but also as categorical
+summary(ed$year)
+levels(as.factor(ed$year))
+
+#CES traffic measure (traffic density in vehicle-km per hour per road length)
+summary(ces$traffic)
+
+#CES PM 2.5 measure (annual mean PM 2.5)
+summary(ces$pm2_5)
+
+```
+
+## Data Cleaning that will be needed
