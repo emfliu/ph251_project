@@ -142,14 +142,14 @@ The following objects are masked from 'package:stats':
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getwd</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "/home/rstudio/PHW251_Fall2023/Project_Scenario3"</code></pre>
+<pre><code>[1] "/home/rstudio/ph251_group_project"</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#bring in files and clean up column names</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ed <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'../Project_Data_Sources/scenario_3/chhs_asthma_ed.csv'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ed <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv'</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>demog <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'../Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>demog <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>ces <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'../Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>ces <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#take a look at columns in each file</span></span>
@@ -785,6 +785,12 @@ The following objects are masked from 'package:stats':
 </div>
 <section id="data-cleaning-that-will-be-needed" class="level2">
 <h2 class="anchored" data-anchor-id="data-cleaning-that-will-be-needed">Data Cleaning that will be needed</h2>
+<ul>
+<li><p>County variable names differ between data sets; need to ensure the same case and syntax.</p></li>
+<li><p>Exposures: CES score and environmental measures can be operationalized as continuous but could consider quintiles or quartiles to make them more interpretable.</p></li>
+<li><p>Outcome: ED visit rates can be operationalized as continuous but could also consider categorization to make it more interpretable.</p></li>
+<li><p>Year of ED visit: We need to factor this variable.</p></li>
+</ul>
 </section>
 </section>
 

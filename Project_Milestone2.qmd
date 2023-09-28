@@ -26,11 +26,11 @@ library(janitor)
 getwd()
 
 #bring in files and clean up column names
-ed <- read.csv('../Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
+ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
   clean_names()
-demog <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% 
+demog <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% 
   clean_names()
-ces <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% 
+ces <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% 
   clean_names()
 
 #take a look at columns in each file
@@ -112,3 +112,11 @@ summary(ces$pm2_5)
 ```
 
 ## Data Cleaning that will be needed
+
+-   County variable names differ between data sets; need to ensure the same case and syntax.
+
+-   Exposures: CES score and environmental measures can be operationalized as continuous but could consider quintiles or quartiles to make them more interpretable.
+
+-   Outcome: ED visit rates can be operationalized as continuous but could also consider categorization to make it more interpretable.
+
+-   Year of ED visit: We need to factor this variable.
