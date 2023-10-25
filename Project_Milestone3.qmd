@@ -1,0 +1,47 @@
+---
+title: "Project Milestone 3"
+author: "Liza Lutker and Emily Liu"
+format: html
+editor: visual
+---
+
+-   Cal Enviro Screen datasets
+
+    -   Recode common variable(s) to be combined with other datasets 
+
+        Identify environmental measure(s) of interest and summarize into a county-level value
+
+    -   Summarize CalEnviroScreen score into a county level variable
+
+    -   NOTE: the methods for each summary variable (environmental measure and  CalEnviroScreen score) should be different (i.e. if you calculate the mean for one, please use another method for the other). If you look at more than one environmental measure you can re-use summarization methods for this. 
+
+-   Asthma ED dataset
+
+    -   Recode common variable(s) to be combined with other datasets 
+
+    -   Recode values that are reading in incorrectly
+
+    -   Subset to most recent year and county level data
+
+    -   Select demographic strata of interest
+
+    -   Pivot table to only include one row per county
+
+Load in data
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+getwd()
+
+#bring in files and clean up column names
+ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
+  clean_names()
+
+demog <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% 
+  clean_names()
+
+ces <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% 
+  clean_names()
+```
