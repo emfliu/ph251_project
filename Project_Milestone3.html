@@ -101,22 +101,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
+<section id="data-cleaning-that-will-be-needed" class="level1">
+<h1>Data Cleaning that will be needed</h1>
 <ul>
-<li><p>Cal Enviro Screen datasets</p>
+<li><p>County variable names differ between data sets; need to ensure the same case and syntax. Use ALL CAPS, no “county” as in the asthma ED visits file</p></li>
+<li><p>Exposures: CES score and environmental measures can be operationalized as continuous but could consider quintiles or quartiles to make them more interpretable.</p></li>
+<li><p>Outcome: ED visit rates can be operationalized as continuous but could also consider categorization to make it more interpretable.</p></li>
+<li><p>Year of ED visit: We need to factor this variable.</p></li>
+</ul>
+<section id="cal-enviro-screen-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="cal-enviro-screen-datasets">Cal Enviro Screen datasets</h2>
 <ul>
 <li><p>Recode common variable(s) to be combined with other datasets&nbsp;</p>
-<p>Identify environmental measure(s) of interest and summarize into a county-level value</p></li>
-<li><p>Summarize CalEnviroScreen score into a county level variable</p></li>
+<p>Identify environmental measure(s) of interest and summarize into a county-level value: CES score, traffic, PM 2.5, poverty</p></li>
+<li><p>Summarize CalEnviroScreen score into a county level variable - median for traffic, mean for pm 2.5, median CES score, at or below 75th percentile for poverty</p></li>
 <li><p>NOTE: the methods for each summary variable (environmental measure and&nbsp; CalEnviroScreen score) should be different (i.e.&nbsp;if you calculate the mean for one, please use another method for the other). If you look at more than one environmental measure you can re-use summarization methods for this.&nbsp;</p></li>
-</ul></li>
-<li><p>Asthma ED dataset</p>
+</ul>
+</section>
+<section id="asthma-ed-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="asthma-ed-dataset">Asthma ED dataset</h2>
 <ul>
-<li><p>Recode common variable(s) to be combined with other datasets&nbsp;</p></li>
+<li><p>Recode common variable(s) to be combined with other datasets&nbsp;- no need to recode as this version of county is what we’ll use</p></li>
 <li><p>Recode values that are reading in incorrectly</p></li>
 <li><p>Subset to most recent year and county level data</p></li>
-<li><p>Select demographic strata of interest</p></li>
+<li><p>Select demographic strata of interest - race/ethnicity, age available. Examine by race, all age groups.</p></li>
 <li><p>Pivot table to only include one row per county</p></li>
-</ul></li>
 </ul>
 <p>Load in data</p>
 <div class="cell">
@@ -144,18 +153,155 @@ The following objects are masked from 'package:stats':
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getwd</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "/home/rstudio/ph251_group_project"</code></pre>
+<pre><code>[1] "/home/rstudio/PHW251_Fall2023/Project_Scenario3"</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#bring in files and clean up column names</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ed <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ed <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'../Project_Data_Sources/scenario_3/chhs_asthma_ed.csv'</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>demog <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>demog <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'../Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>ces <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>ces <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'../Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv'</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>()</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(ces<span class="sc">$</span>traffic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project_Milestone3_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="672"></p>
 </div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ces<span class="sc">$</span>traffic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max.     NA's 
+   20.75   553.80   881.04  1117.45  1386.57 45752.00       35 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(ces<span class="sc">$</span>traffic, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">75</span>, .<span class="dv">8</span>, .<span class="dv">85</span>, .<span class="dv">9</span>, .<span class="dv">95</span>, .<span class="dv">99</span>), <span class="at">na.rm=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     75%      80%      85%      90%      95%      99% 
+1386.566 1594.513 1861.337 2219.106 2835.372 4170.218 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(ces<span class="sc">$</span>pm2_5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project_Milestone3_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(demog<span class="sc">$</span>ces_4_0_score)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project_Milestone3_files/figure-html/unnamed-chunk-1-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(ces<span class="sc">$</span>poverty)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Project_Milestone3_files/figure-html/unnamed-chunk-1-4.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#look at values for variables and see if they need any adjustment</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    county               year         strata          strata_name       
+ Length:4484        Min.   :2015   Length:4484        Length:4484       
+ Class :character   1st Qu.:2016   Class :character   Class :character  
+ Mode  :character   Median :2018   Mode  :character   Mode  :character  
+                    Mean   :2018                                        
+                    3rd Qu.:2019                                        
+                    Max.   :2020                                        
+                                                                        
+  age_group         number_of_ed_visits age_adjusted_ed_visit_rate
+ Length:4484        Min.   :     0.0    Min.   :   0.00           
+ Class :character   1st Qu.:    43.5    1st Qu.:  24.88           
+ Mode  :character   Median :   191.0    Median :  40.20           
+                    Mean   :  2013.5    Mean   :  51.40           
+                    3rd Qu.:   852.0    3rd Qu.:  61.70           
+                    Max.   :191904.0    Max.   :3531.00           
+                    NA's   :681         NA's   :716               </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#will want to factor year</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(ed<span class="sc">$</span>strata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Total population" "Child vs. adult"  "Age groups"       "Race/ethnicity"  </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(ed<span class="sc">$</span>strata_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "All ages"       "0\x9617 years"  "18+ years"      "0\x964 years"  
+ [5] "5\x9617 years"  "18\x9664 years" "65+ years"      "White"         
+ [9] "Black"          "Hispanic"       "Asian/PI"       "AI/AN"         
+[13] "Asian"          "NHPI"           "Multi-Race"     "Multi-race"    </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(ed<span class="sc">$</span>strata_name, ed<span class="sc">$</span>year)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                
+                 2015 2016 2017 2018 2019 2020
+  0\x9617 years    59   59   59   59   59   59
+  0\x964 years     59   59   59   59   59   59
+  18+ years        59   59   59   59   59   59
+  18\x9664 years   59   59   59   59   59   59
+  5\x9617 years    59   59   59   59   59   59
+  65+ years        59   59   59   59   59   59
+  AI/AN            59   59   59   59   59   59
+  All ages         59   59   59   59   59   59
+  Asian             0    0    0    0   59    0
+  Asian/PI         59   59   59   59    0   59
+  Black            59   59   59   59   59   59
+  Hispanic         59   59   59   59   59   59
+  Multi-race        0    0    0    0    0   59
+  Multi-Race        0    0    0    0   59    0
+  NHPI              0    0    0    0   59   59
+  White            59   59   59   59   59   59</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#these values are reading in oddly and need fixing plus there are different ways racial groups are ID'ed across years (Asian only used in 2019, otherwise use Asian/PI; Multi-race used in 2020 but otherwise use Multi-Race. Not sure what to do about the fact that Asian/PI and NHPI seem to be used concurrently in 2019 and 2020 - leave as is) </span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(ed<span class="sc">$</span>age_group)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "All ages"       "0\x9617 years"  "18+ years"      "0\x964 years"  
+[5] "5\x9617 years"  "18\x9664 years" "65+ years"     </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#also reading in oddly and need recoding</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>ed1 <span class="ot">&lt;-</span> ed <span class="sc">%&gt;%</span> </span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">str_name =</span> <span class="fu">case_when</span>(</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"All ages"</span> <span class="sc">~</span> <span class="st">"all_ages"</span>,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"0</span><span class="sc">\x9617</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"0_17"</span>,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"18+ years"</span> <span class="sc">~</span> <span class="st">"18plus"</span>,      </span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"0</span><span class="sc">\x964</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"0_4"</span>,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"5</span><span class="sc">\x9617</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"5_17"</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"18</span><span class="sc">\x9664</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"18_64"</span>,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"65+ years"</span> <span class="sc">~</span> <span class="st">"65plus"</span>,</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"White"</span> <span class="sc">~</span> <span class="st">"WHITE"</span>,</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"Black"</span> <span class="sc">~</span> <span class="st">"BLACK"</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"Hispanic"</span> <span class="sc">~</span> <span class="st">"HISP"</span>,</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Asian/PI"</span>, <span class="st">"Asian"</span>) <span class="sc">~</span> <span class="st">"API"</span>,</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"NHPI"</span> <span class="sc">~</span> <span class="st">"NHPI"</span>,</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">==</span> <span class="st">"AI/AN"</span> <span class="sc">~</span> <span class="st">"AIAN"</span>,</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>      strata_name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Multi-Race"</span>, <span class="st">"Multi-race"</span>) <span class="sc">~</span> <span class="st">"MULTI"</span>,</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>      )) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_grp =</span> <span class="fu">case_when</span>(</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"All ages"</span> <span class="sc">~</span> <span class="st">"all_ages"</span>,</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"0</span><span class="sc">\x9617</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"0_17"</span>,</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"18+ years"</span> <span class="sc">~</span> <span class="st">"18plus"</span>,      </span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"0</span><span class="sc">\x964</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"0_4"</span>,</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"5</span><span class="sc">\x9617</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"5_17"</span>,</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"18</span><span class="sc">\x9664</span><span class="st"> years"</span> <span class="sc">~</span> <span class="st">"18_64"</span>,</span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>      age_group <span class="sc">==</span> <span class="st">"65+ years"</span> <span class="sc">~</span> <span class="st">"65plus"</span>,</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">yr=</span><span class="fu">as.factor</span>(year)) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">c</span>(strata_name, age_group, year))</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a><span class="co"># unique(ed1$str_name)</span></span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a><span class="co"># table(ed1$strata_name, ed1$str_name, useNA = "always")</span></span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a><span class="co"># unique(ed1$age_grp)</span></span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a><span class="co"># table(ed1$age_group, ed1$age_grp, useNA = "always")</span></span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a><span class="co"># unique(ed1$yr)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#now subset to years, strata (all age groups by race) of interest and pivot to have one row per county (since examining all ages combined, use age-adjusted values)</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>ed2 <span class="ot">&lt;-</span> ed1 <span class="sc">%&gt;%</span> </span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(yr <span class="sc">==</span> <span class="st">"2020"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(age_grp <span class="sc">==</span> <span class="st">"all_ages"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">c</span>(strata, number_of_ed_visits, age_grp, yr)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> str_name, <span class="at">values_from =</span> age_adjusted_ed_visit_rate) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">TOTAL =</span> all_ages)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
 
 </main>
 <!-- /main column -->
