@@ -43,39 +43,110 @@ Load in data
 library(tidyverse)
 library(janitor)
 
-getwd()
-
 #bring in files and clean up column names
-ed <- read.csv('../Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
-  clean_names()
+ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% clean_names()
 
-demog <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% 
-  clean_names()
+ces_scores <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% clean_names()
 
-ces <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% 
-  clean_names()
+ces_measures <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% clean_names()
+```
 
-hist(ces$traffic)
-summary(ces$traffic)
-quantile(ces$traffic, probs = c(.75, .8, .85, .9, .95, .99), na.rm=TRUE)
-hist(ces$pm2_5)
-hist(demog$ces_4_0_score)
-hist(ces$poverty)
+**Data Cleaning**
+
+Part 1: 2021 Cal Enviroscreen Scores
+
+-   Change "county" variable to "county-name" for consistency between datasets
+
+-   Created 4 new variables by county
+
+    -   *median_ces_perc_county* = median CES percentile score by county
+
+    -   *median_ces_abv_perc_75th* = flag that indicates if the county median CES percentile score is equal to or **above** the 75th percentile.
+
+    -   *median_ces_abv_perc_50th* = flag that indicates if the county median CES percentile score is equal to or **above** the 50th percentile.
+
+    -   *median_ces_blw_perc_25th* = flag that indicates if the county median CES percentile score is equal to or **below** the 25th percentile.
+
+-   Output: Dataset named **ces_score_summary** that can be joined by *county_name*
+
+```{r}
+
+# ces_scores %>% select(county) %>% distinct() #examine unique county names
+# length(unique(ces_scores$county)) #58
+
+# Change county name from "Alameda County" -> "ALAMEDA"
+ces_score_updated <- ces_scores %>% 
+  mutate(county_name = str_to_upper(str_trim(str_remove(county, "County"))))
+
+# ces_score_updated %>% select(county_name) %>% distinct() #check new county name
+
+ces_score_summary <- ces_score_updated %>% group_by(county_name) %>%
+  summarize(median_ces_perc_county = median(ces_4_0_percentile, na.rm = T),
+            median_ces_abv_perc_75th = if_else(median_ces_perc_county >= 75, 1, 0),                 median_ces_abv_perc_50th = if_else(median_ces_perc_county >= 50, 1, 0),
+            median_ces_blw_perc_25th = if_else(median_ces_perc_county <= 25, 1, 0))
+
 
 ```
 
-```{r}
-#look at values for variables and see if they need any adjustment
-summary(ed)
-#will want to factor year
-unique(ed$strata)
-unique(ed$strata_name)
-table(ed$strata_name, ed$year)
-#these values are reading in oddly and need fixing plus there are different ways racial groups are ID'ed across years (Asian only used in 2019, otherwise use Asian/PI; Multi-race used in 2020 but otherwise use Multi-Race. Not sure what to do about the fact that Asian/PI and NHPI seem to be used concurrently in 2019 and 2020 - leave as is) 
-unique(ed$age_group)
-#also reading in oddly and need recoding
+Part 2: 2021 Cal Enviroscreen Measures
 
-ed1 <- ed %>% 
+-   Change "county" variable to "county-name" for consistency between datasets
+
+-   Created 4 new variables by county
+
+    -   *pm_25_mean* = county mean PM 2.5 value
+
+    -   *traffic_median*= county median traffic value
+
+    -   *poverty_perc_mean* = county mean of poverty percentile
+
+    -   *poverty_abv_75th* = flag that indicates if the county mean poverty percentile is equal to or above the 75th percentile.
+
+-   Output: Dataset named **ces_measures_summary** that can be joined by *county_name*
+
+```{r}
+# ces_measures %>% select(california_county) %>% distinct()
+# length(unique(ces_measures$california_county)) #58
+
+# Change county name from "Alameda" -> "ALAMEDA"
+ces_measures_updated <- ces_measures %>% 
+  mutate(county_name = str_to_upper(str_trim(california_county)))
+# ces %>% select(county_name) %>% distinct()
+
+ces_measures_summary <- ces_measures_updated %>% group_by(county_name) %>%
+  summarize(pm_25_mean = mean(pm2_5, na.rm = TRUE),
+            traffic_median = median(traffic, na.rm = TRUE), 
+            poverty_perc_mean = mean(poverty_pctl, na.rm = TRUE), 
+            poverty_abv_75th = if_else(poverty_perc_mean >= 75, 1, 0))
+```
+
+Part 3: Asthma Rates
+
+-   Cleaned up category names for age.
+
+-   Change "california_county" variable to "county_name" for consistency between datasets
+
+    -   Dropped values with county_name = "CALIFORNIA" since that is an overall total among all counties in California.
+
+-   Pivot table so we have one row per county (58 rows)
+
+-   Output: Dataset named **ed_summary** that can be joined by *county_name*
+
+```{r}
+
+#look at values for variables and see if they need any adjustment
+
+# summary(ed) # NOTE: will want to factor year
+# unique(ed$strata)
+# unique(ed$strata_name)
+# table(ed$strata_name, ed$year)
+
+# NOTE: these values are reading in oddly and need fixing plus there are different ways racial groups are ID'ed across years (Asian only used in 2019, otherwise use Asian/PI; Multi-race used in 2020 but otherwise use Multi-Race. Not sure what to do about the fact that Asian/PI and NHPI seem to be used concurrently in 2019 and 2020 - leave as is) 
+
+# unique(ed$age_group)
+# NOTE: age is also reading in oddly and need recoding
+
+ed_1 <- ed %>% 
   mutate(str_name = case_when(
       strata_name == "All ages" ~ "all_ages",
       strata_name == "0\x9617 years" ~ "0_17",
@@ -104,24 +175,28 @@ ed1 <- ed %>%
   mutate(yr=as.factor(year)) %>% 
   select(!c(strata_name, age_group, year))
 
-
+# Check updated values
 # unique(ed1$str_name)
 # table(ed1$strata_name, ed1$str_name, useNA = "always")
 # unique(ed1$age_grp)
 # table(ed1$age_group, ed1$age_grp, useNA = "always")
 # unique(ed1$yr)
 
+# ed_1 %>% select(county) %>% distinct()
+# length(unique(ed$county)) #59
 
-```
+# drop california county (overall rows)
+ed_1 <- ed_1 %>% filter(county != "CALIFORNIA") %>% rename(county_name = county)
 
-```{r}
-#now subset to years, strata (all age groups by race) of interest and pivot to have one row per county (since examining all ages combined, use age-adjusted values)
+# ed %>% select(county_name) %>% distinct()
 
-ed2 <- ed1 %>% 
+# subset to years, strata (all age groups by race) of interest and pivot to have one row per county (since examining all ages combined, use age-adjusted values)
+
+ed_summary <- ed_1 %>% 
   filter(yr == "2020") %>% 
   filter(age_grp == "all_ages") %>% 
   select(!c(strata, number_of_ed_visits, age_grp, yr)) %>% 
   pivot_wider(names_from = str_name, values_from = age_adjusted_ed_visit_rate) %>% 
-  rename(TOTAL = all_ages)
-
+  rename(TOTAL = all_ages) %>%
+  mutate_all(~replace(., is.na(.), 0)) #replace all NAs with 0
 ```
