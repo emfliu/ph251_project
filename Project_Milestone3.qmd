@@ -132,6 +132,20 @@ Part 3: Asthma Rates
 
 -   Output: Dataset named **ed_summary** that can be joined by *county_name*
 
+-   **NOTE:**
+
+    -   There are discrepancies of racial and ethnic categorizations of Asian, API, and NHPI between years. See notes in the code comments.
+
+    -   There are many NA values for the race-stratified data due to "Count and rate suppressed in accordance with data de-identification guidelines".
+
+    -   For age-adjusted rate, data dictionary indicates that rates based on counts less than 12 are suppressed due to statistical instability.
+
+    -   **Needed data decisions:**
+
+        -   How do we want to handle these data in the analysis phase?
+
+        -   Are there specific racial and ethnic groups that we want to drop from the analysis due to small cell counts and discrepancies in categorization?
+
 ```{r}
 
 #look at values for variables and see if they need any adjustment
@@ -139,7 +153,7 @@ Part 3: Asthma Rates
 # summary(ed) # NOTE: will want to factor year
 # unique(ed$strata)
 # unique(ed$strata_name)
-# table(ed$strata_name, ed$year)
+table(ed$strata_name, ed$year)
 
 # NOTE: these values are reading in oddly and need fixing plus there are different ways racial groups are ID'ed across years (Asian only used in 2019, otherwise use Asian/PI; Multi-race used in 2020 but otherwise use Multi-Race. Not sure what to do about the fact that Asian/PI and NHPI seem to be used concurrently in 2019 and 2020 - leave as is) 
 
@@ -188,6 +202,7 @@ ed_1 <- ed %>%
 # drop california county (overall rows)
 ed_1 <- ed_1 %>% filter(county != "CALIFORNIA") %>% rename(county_name = county)
 
+test <- ed_1 %>% filter(str_name == "NHPI")
 # ed %>% select(county_name) %>% distinct()
 
 # subset to years, strata (all age groups by race) of interest and pivot to have one row per county (since examining all ages combined, use age-adjusted values)
@@ -197,6 +212,5 @@ ed_summary <- ed_1 %>%
   filter(age_grp == "all_ages") %>% 
   select(!c(strata, number_of_ed_visits, age_grp, yr)) %>% 
   pivot_wider(names_from = str_name, values_from = age_adjusted_ed_visit_rate) %>% 
-  rename(TOTAL = all_ages) %>%
-  mutate_all(~replace(., is.na(.), 0)) #replace all NAs with 0
+  rename(TOTAL = all_ages) 
 ```
