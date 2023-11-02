@@ -1,50 +1,26 @@
 ---
 title: "Project Milestone 3"
 author: "Liza Lutker and Emily Liu"
-format: html
+format:
+  html:
+    code-overflow: wrap
 editor: visual
 ---
 
-# Data Cleaning that will be needed
+# Data Cleaning
 
--   County variable names differ between data sets; need to ensure the same case and syntax. Use ALL CAPS, no "county" as in the asthma ED visits file
-
--   Exposures: CES score and environmental measures can be operationalized as continuous but could consider quintiles or quartiles to make them more interpretable.
-
--   Outcome: ED visit rates can be operationalized as continuous but could also consider categorization to make it more interpretable.
-
--   Year of ED visit: We need to factor this variable.
-
-## Cal Enviro Screen datasets
-
--   Recode common variable(s) to be combined with other datasets 
-
-    Identify environmental measure(s) of interest and summarize into a county-level value: CES score, traffic, PM 2.5, poverty
-
--   Summarize CalEnviroScreen score into a county level variable - median for traffic, mean for pm 2.5, median CES score, at or below 75th percentile for poverty
-
--   NOTE: the methods for each summary variable (environmental measure and  CalEnviroScreen score) should be different (i.e. if you calculate the mean for one, please use another method for the other). If you look at more than one environmental measure you can re-use summarization methods for this. 
-
-## Asthma ED dataset
-
--   Recode common variable(s) to be combined with other datasets - no need to recode as this version of county is what we'll use
-
--   Recode values that are reading in incorrectly
-
--   Subset to most recent year and county level data
-
--   Select demographic strata of interest - race/ethnicity, age available. Examine by race, all age groups.
-
--   Pivot table to only include one row per county
-
-Load in data
+**Load in data**
 
 ```{r}
+#| output: false
+#| warning: false
+
 library(tidyverse)
 library(janitor)
 
 #bring in files and clean up column names
-ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% clean_names()
+ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
+  clean_names()
 
 ces_scores <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% clean_names()
 
@@ -53,24 +29,24 @@ ces_measures <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_meas
 
 **Data Cleaning**
 
-Part 1: 2021 Cal Enviroscreen Scores
+***Part 1: 2021 Cal Enviroscreen Scores***
 
 -   Change "county" variable to "county-name" for consistency between datasets
 
 -   Created 4 new variables by county
 
-    -   *median_ces_perc_county* = median CES percentile score by county
+    -   *median_ces_perc_county* = median CES percentile score by county (type: num)
 
-    -   *median_ces_abv_perc_75th* = flag that indicates if the county median CES percentile score is equal to or **above** the 75th percentile.
+    -   *median_ces_abv_perc_75th* = flag that indicates if the county median CES percentile score is equal to or **above** the 75th percentile (type: factor)
 
-    -   *median_ces_abv_perc_50th* = flag that indicates if the county median CES percentile score is equal to or **above** the 50th percentile.
+    -   *median_ces_abv_perc_50th* = flag that indicates if the county median CES percentile score is equal to or **above** the 50th percentile (type: factor)
 
-    -   *median_ces_blw_perc_25th* = flag that indicates if the county median CES percentile score is equal to or **below** the 25th percentile.
+    -   *median_ces_blw_perc_25th* = flag that indicates if the county median CES percentile score is equal to or **below** the 25th percentile (type: factor)
 
 -   Output: Dataset named **ces_score_summary** that can be joined by *county_name*
 
 ```{r}
-
+#| output: false
 # ces_scores %>% select(county) %>% distinct() #examine unique county names
 # length(unique(ces_scores$county)) #58
 
@@ -82,29 +58,45 @@ ces_score_updated <- ces_scores %>%
 
 ces_score_summary <- ces_score_updated %>% group_by(county_name) %>%
   summarize(median_ces_perc_county = median(ces_4_0_percentile, na.rm = T),
-            median_ces_abv_perc_75th = if_else(median_ces_perc_county >= 75, 1, 0),                 median_ces_abv_perc_50th = if_else(median_ces_perc_county >= 50, 1, 0),
+            median_ces_abv_perc_75th = if_else(median_ces_perc_county >= 75, 1, 0),                        median_ces_abv_perc_50th = if_else(median_ces_perc_county >= 50, 1, 0),
             median_ces_blw_perc_25th = if_else(median_ces_perc_county <= 25, 1, 0))
 
+ces_score_summary$median_ces_abv_perc_75th <- 
+  factor(ces_score_summary$median_ces_abv_perc_75th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
 
+ces_score_summary$median_ces_abv_perc_50th <- 
+  factor(ces_score_summary$median_ces_abv_perc_50th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
+
+ces_score_summary$median_ces_blw_perc_25th <- 
+  factor(ces_score_summary$median_ces_blw_perc_25th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
+
+# str(ces_score_summary)
 ```
 
-Part 2: 2021 Cal Enviroscreen Measures
+***Part 2: 2021 Cal Enviroscreen Measures***
 
 -   Change "county" variable to "county-name" for consistency between datasets
 
 -   Created 4 new variables by county
 
-    -   *pm_25_mean* = county mean PM 2.5 value
+    -   *pm_25_mean* = county mean PM 2.5 value (type: num)
 
-    -   *traffic_median*= county median traffic value
+    -   *traffic_median*= county median traffic value (type: num)
 
-    -   *poverty_perc_mean* = county mean of poverty percentile
+    -   *poverty_perc_mean* = county mean of poverty percentile (type: num)
 
-    -   *poverty_abv_75th* = flag that indicates if the county mean poverty percentile is equal to or above the 75th percentile.
+    -   *poverty_abv_75th* = flag that indicates if the county mean poverty percentile is equal to or above the 75th percentile. (type: factor)
 
 -   Output: Dataset named **ces_measures_summary** that can be joined by *county_name*
 
 ```{r}
+#| output: false
 # ces_measures %>% select(california_county) %>% distinct()
 # length(unique(ces_measures$california_county)) #58
 
@@ -118,9 +110,14 @@ ces_measures_summary <- ces_measures_updated %>% group_by(county_name) %>%
             traffic_median = median(traffic, na.rm = TRUE), 
             poverty_perc_mean = mean(poverty_pctl, na.rm = TRUE), 
             poverty_abv_75th = if_else(poverty_perc_mean >= 75, 1, 0))
+
+ces_measures_summary$poverty_abv_75th <- 
+  factor(ces_measures_summary$poverty_abv_75th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
 ```
 
-Part 3: Asthma Rates
+***Part 3: Asthma Rates***
 
 -   Cleaned up category names for age.
 
@@ -147,13 +144,14 @@ Part 3: Asthma Rates
         -   Are there specific racial and ethnic groups that we want to drop from the analysis due to small cell counts and discrepancies in categorization?
 
 ```{r}
+#| output: false
 
 #look at values for variables and see if they need any adjustment
 
 # summary(ed) # NOTE: will want to factor year
 # unique(ed$strata)
 # unique(ed$strata_name)
-table(ed$strata_name, ed$year)
+# table(ed$strata_name, ed$year)
 
 # NOTE: these values are reading in oddly and need fixing plus there are different ways racial groups are ID'ed across years (Asian only used in 2019, otherwise use Asian/PI; Multi-race used in 2020 but otherwise use Multi-Race. Not sure what to do about the fact that Asian/PI and NHPI seem to be used concurrently in 2019 and 2020 - leave as is) 
 
@@ -202,7 +200,6 @@ ed_1 <- ed %>%
 # drop california county (overall rows)
 ed_1 <- ed_1 %>% filter(county != "CALIFORNIA") %>% rename(county_name = county)
 
-test <- ed_1 %>% filter(str_name == "NHPI")
 # ed %>% select(county_name) %>% distinct()
 
 # subset to years, strata (all age groups by race) of interest and pivot to have one row per county (since examining all ages combined, use age-adjusted values)
@@ -212,5 +209,88 @@ ed_summary <- ed_1 %>%
   filter(age_grp == "all_ages") %>% 
   select(!c(strata, number_of_ed_visits, age_grp, yr)) %>% 
   pivot_wider(names_from = str_name, values_from = age_adjusted_ed_visit_rate) %>% 
-  rename(TOTAL = all_ages) 
+  rename(TOTAL = all_ages) %>% clean_names()
+
+#names(ed_summary)
+```
+
+# Data Dictionary
+
+***Part 1: 2021 Cal Enviroscreen Scores***
+
+-   **Dataset:** ces_score_summary
+-   **Variables:**
+    -   *county_name* = name of California county in all caps format (e.g. "ALAMEDA") (type: character)
+
+    -   *median_ces_perc_county* = median CES percentile score by county (type: num)
+
+    -   *median_ces_abv_perc_75th* = flag that indicates if the county median CES percentile score is equal to or **above** the 75th percentile (type: factor)
+
+    -   *median_ces_abv_perc_50th* = flag that indicates if the county median CES percentile score is equal to or **above** the 50th percentile (type: factor)
+
+    -   *median_ces_blw_perc_25th* = flag that indicates if the county median CES percentile score is equal to or **below** the 25th percentile (type: factor)
+
+***Part 2: 2021 Cal Enviroscreen Measures***
+
+-   **Dataset**: ces_measures_summary
+
+-   **Variables**
+
+    -   *county_name* = name of California county in all caps format (e.g. "ALAMEDA") (type: character)
+
+    -   *traffic_median*= county median traffic value (type: num)
+
+    -   *poverty_perc_mean* = county mean of poverty percentile (type: num)
+
+    -   *poverty_abv_75th* = flag that indicates if the county mean poverty percentile is equal to or above the 75th percentile. (type: factor)
+
+***Part 3: Asthma Rates***
+
+-   **Dataset:** ed_summary
+
+-   **Variables:**
+
+    -   *county_name* = name of California county in all caps format (e.g. "ALAMEDA") (type: character)
+
+    -   *total* = age-adjusted rate of ED visits for all racial and ethnic groups. (type = num)
+
+    -   *white* = age-adjusted rate of ED visits for racial and ethnic group of White (type = num)
+
+    -   *black* = age-adjusted rate of ED visits for racial and ethnic group of Black (type = num)
+
+    -   *hisp* = age-adjusted rate of ED visits for racial and ethnic group of Hispanic (type = num)
+
+    -   *api* = age-adjusted rate of ED visits for racial and ethnic group of Asian and Pacific Islander (type = num)
+
+    -   *aian* = age-adjusted rate of ED visits for racial and ethnic group of Alaskan Native and American Indian (type = num)
+
+    -   *nhpi* = age-adjusted rate of ED visits for racial and ethnic group of Native Hawaiian and Pacific Islander (type = num)
+
+    -   *multi* = age-adjusted rate of ED visits for racial and ethnic group of multiracial (type = num)
+
+        # Frequencies
+
+```{r}
+# install.packages("gtsummary")
+library(gtsummary)
+
+# join ces_score_summary and ces_measures_summary by county name
+freq_data <- ces_score_summary %>% left_join(., ces_measures_summary, by = "county_name") 
+
+# 
+# frequencies 
+freq_data %>% 
+  select(median_ces_perc_county, median_ces_abv_perc_75th, 
+         median_ces_abv_perc_50th, median_ces_blw_perc_25th,
+         traffic_median, poverty_perc_mean, poverty_abv_75th) %>% 
+  tbl_summary(
+    label = c(median_ces_perc_county ~ "County Median CES Percentile",
+              median_ces_abv_perc_75th ~ "County Median CES Percentile above 75",
+              median_ces_abv_perc_50th ~ "County Median CES Percentile above 50", 
+              median_ces_blw_perc_25th ~ "County Median CES Percentile below 25",
+              traffic_median ~ "County Median Traffic", 
+              poverty_perc_mean ~ "County Mean Poverty Percentile", 
+              poverty_abv_75th ~ "County Mean Poverty Percentile above 75")
+  )
+
 ```
