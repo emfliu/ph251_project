@@ -1,0 +1,136 @@
+---
+title: "Project_Milestone4"
+author: "Liza Lutker and Emily Liu"
+format: html
+editor: visual
+---
+
+## Project Milestone 4
+
+Instructions:
+
+Please submit an Rmd or Qmd and publish an html file on RPubs with the following:
+
+1.  Final datasets for creation of visualization
+
+    -   Join all datasets together - join in asthma data.
+
+    -   Calculate any remaining data elements needed for analysis - not necessary to create, but should drop all race and ethnicity groups except white, Black, and Hispanic (due to NA variables) and overall group.
+
+    -   Show code used to create joined dataset, but please do not print full data frame output (showing data structure with `str()` is okay)
+
+2.  Visualizations (at least one per group member)
+
+3.  Your task is to utilize these datasets to create county-level measures to accomplish two goals. The first is to compare county asthma ED rates with a county CES measure to assess if there appears to be a correlation. The second is to compare asthma ED rates with county-level summaries for specific environmental measures to determine if those specific measures may be worth further investigation.
+
+    -   One print quality table as requested in scenario
+
+        -   Table 1 with all relevant measures / overall, stratify by CES measure
+
+# Joining Data
+
+Code to join data sets and provide appropriate labels for table output.
+
+```{r, echo = FALSE}
+# Install/load packages
+library(tidyverse)
+install.packages("gtsummary")
+library(gtsummary)
+install.packages("labelled")
+library(labelled)
+
+# Load in cleaned datasets
+ed_summary <- 
+  readRDS('./Project_Data_Sources/scenario_3/ed_summary.RDS')
+ces_measures_summary <- 
+  readRDS('./Project_Data_Sources/scenario_3/ces_measures_summary.RDS')
+ces_score_summary <- 
+  readRDS('./Project_Data_Sources/scenario_3/ces_score_summary.RDS')
+names(ed_summary)
+
+# Join datasets using variable "county_name"
+# NOTES:(1) Drops small racial and ethnic groups with suppressed cells. Keep White, Black, and Hispanic, and overall ED asthma rates. (2) Add labels to table variables. 
+
+joined_data <- ces_score_summary %>% 
+  left_join(., ces_measures_summary, by = "county_name") %>%
+  left_join(., ed_summary, by = "county_name") %>%
+  select(-c(api, aian, nhpi, multi)) %>% 
+  set_variable_labels(
+  median_ces_perc_county = "Median CES score percentile", 
+  median_ces_abv_perc_50th = "Median CES score, 50th percentile and above", 
+  pm_25_mean = "Mean PM2.5",
+  traffic_median = "Traffic median",
+  poverty_perc_mean = "Mean poverty",
+  poverty_abv_75th = "Mean poverty above 75th percentile",
+  total = "Total age-adjusted rate of ED asthma visits",
+  white = "Age-adjusted rate of ED asthma visits - White patients",
+  black = "Age-adjusted rate of ED asthma visits - Black patients",
+  hisp = "Age-adjusted rate of ED asthma visits - Hispanic patients"
+)
+
+str(joined_data)
+```
+
+# Table 1
+
+Code for output table.
+
+```{r}
+#Table Output
+joined_data %>% 
+  select(-c(county_name, median_ces_abv_perc_75th, median_ces_blw_perc_25th)) %>% 
+  tbl_summary(by = median_ces_abv_perc_50th,
+              missing_text = "Rate suppressed for small cell count") %>% 
+  add_overall() %>%
+  add_n() %>%
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ 
+  "**Median CES score above 50th percentile**") %>%
+  modify_footnote(
+    all_stat_cols() ~ "Median (IQR) or Frequency (%)"
+  ) %>%
+  modify_caption("**Table 1. County Characteristics**") %>%
+  bold_labels()
+```
+
+**TABLE INTERPRETATION:** Counties with CES median scores above the 50th percentile appear to have higher mean PM 2.5, higher median traffic, and more poverty. Additionally, these counties have age-adjusted rates of ED asthma visits total and stratified by racial and ethnic group.
+
+# Plots
+
+-   One print quality plot or chart as requested in scenario
+
+    -   \*Maybe do this for all measures (CES measure + specific environmental measures).
+
+    -   CES measure (1/0) - x axis; boxplot for asthma rates among Black individuals
+
+    -   CES measure (1/0) - x axis; boxplot for asthma rates among white individuals
+
+    -   CES measure (1/0) - x axis; boxplot for asthma rates among Hispanic individuals
+
+    -   CES measure (1/0) - x axis; boxplot for asthma rates overall
+
+-   For groups of 3, one additional print quality table or plot of your choice (can support the requested data in the scenario, or answer a different question using the same data sources)
+
+1.  For each visual, include
+
+    -   Code used to generate visual
+
+    -   Legend (if necessary)
+
+    -   1-2 sentence interpretation
+
+    -   NOTE:
+
+        -   Please make sure the visual can stand-alone, meaning it includes enough information in title, legend, and footnote so that a person who sees only the visualization could understand what is being presented.
+
+        -   Please also make sure column names, axis labels, and any other labels are meaningful and not just the name of the variable (ex: "County" rather than "county_name")
+
+2.  Html file that is professionally prepared for presentation and published to RPubs
+
+    -   Only the necessary information is in the output (e.g., suppress entire data frame outputs but showing data structure with `str()` is okay)
+
+    -   Show your work by "echoing" code used in Rmd/Qmd file to create your tables and graphs. \`\`\`{r, echo = TRUE} in code chunk preferences.
+
+    -   Use of headers and sub headers to create an organized document
+
+    -   For this milestone please make sure code for visualizations are included in the final file
