@@ -19,12 +19,12 @@ library(tidyverse)
 library(janitor)
 
 #bring in files and clean up column names
-ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
+ed <- read.csv('../Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% 
   clean_names()
 
-ces_scores <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% clean_names()
+ces_scores <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% clean_names()
 
-ces_measures <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% clean_names()
+ces_measures <- read.csv('../Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% clean_names()
 ```
 
 **Data Cleaning**
@@ -238,6 +238,8 @@ ed_summary <- ed_1 %>%
 
     -   *county_name* = name of California county in all caps format (e.g. "ALAMEDA") (type: character)
 
+    -   *pm_25_mean* = county mean PM 2.5 value (type: num)
+
     -   *traffic_median*= county median traffic value (type: num)
 
     -   *poverty_perc_mean* = county mean of poverty percentile (type: num)
@@ -264,7 +266,7 @@ ed_summary <- ed_1 %>%
 
     -   *aian* = age-adjusted rate of ED visits for racial and ethnic group of Alaskan Native and American Indian (type = num)
 
-    -   *nhpi* = age-adjusted rate of ED visits for racial and ethnic group of Native Hawaiian and Pacific Islander (type = num)
+    -   *nhpi* = age-adjusted rate of ED visits for racial and ethnic group of Native Hawaiian and Pacific Islander. Note: oddly, this seems to be mutually exclusive with api variable (type = num)
 
     -   *multi* = age-adjusted rate of ED visits for racial and ethnic group of multiracial (type = num)
 
@@ -282,12 +284,13 @@ freq_data <- ces_score_summary %>% left_join(., ces_measures_summary, by = "coun
 freq_data %>% 
   select(median_ces_perc_county, median_ces_abv_perc_75th, 
          median_ces_abv_perc_50th, median_ces_blw_perc_25th,
-         traffic_median, poverty_perc_mean, poverty_abv_75th) %>% 
+         pm_25_mean, traffic_median, poverty_perc_mean, poverty_abv_75th) %>% 
   tbl_summary(
     label = c(median_ces_perc_county ~ "County Median CES Percentile",
               median_ces_abv_perc_75th ~ "County Median CES Percentile above 75",
               median_ces_abv_perc_50th ~ "County Median CES Percentile above 50", 
               median_ces_blw_perc_25th ~ "County Median CES Percentile below 25",
+              pm_25_mean ~ "County Mean PM 2.5",
               traffic_median ~ "County Median Traffic", 
               poverty_perc_mean ~ "County Mean Poverty Percentile", 
               poverty_abv_75th ~ "County Mean Poverty Percentile above 75")
