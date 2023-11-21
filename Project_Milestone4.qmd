@@ -5,43 +5,20 @@ format: html
 editor: visual
 ---
 
-## Project Milestone 4
-
-Instructions:
-
-Please submit an Rmd or Qmd and publish an html file on RPubs with the following:
-
-1.  Final datasets for creation of visualization
-
-    -   Join all datasets together - join in asthma data.
-
-    -   Calculate any remaining data elements needed for analysis - not necessary to create, but should drop all race and ethnicity groups except white, Black, and Hispanic (due to NA variables) and overall group.
-
-    -   Show code used to create joined dataset, but please do not print full data frame output (showing data structure with `str()` is okay)
-
-2.  Visualizations (at least one per group member)
-
-3.  Your task is to utilize these datasets to create county-level measures to accomplish two goals. The first is to compare county asthma ED rates with a county CES measure to assess if there appears to be a correlation. The second is to compare asthma ED rates with county-level summaries for specific environmental measures to determine if those specific measures may be worth further investigation.
-
-    -   One print quality table as requested in scenario
-
-        -   Table 1 with all relevant measures / overall, stratify by CES measure
-
-    -   At least one high quality figure as requested in the scenario
-
-        -   Figures 1-3 with race-stratified rates across CES and other measures
-
-# Joining Data
-
-Code to join data sets and provide appropriate labels for table output.
-
-```{r, echo = FALSE}
+```{r, eval=TRUE, echo=FALSE, message=FALSE}
 # Install/load packages
 library(tidyverse)
 install.packages("gtsummary")
 library(gtsummary)
 install.packages("labelled")
 library(labelled)
+library(ggplot2)
+install.packages("rsconnect")
+library(rsconnect)
+install.packages("knitr")
+library(knitr)
+install.packages("packrat")
+library(packrat)
 
 # Load in cleaned datasets
 ed_summary <- 
@@ -50,7 +27,15 @@ ces_measures_summary <-
   readRDS('./Project_Data_Sources/scenario_3/ces_measures_summary.RDS')
 ces_score_summary <- 
   readRDS('./Project_Data_Sources/scenario_3/ces_score_summary.RDS')
-names(ed_summary)
+
+```
+
+# Joining Data
+
+Code to join data sets and provide appropriate labels for table output.
+
+```{r, echo = TRUE, warning=FALSE}
+# names(ed_summary)
 
 # Join datasets using variable "county_name"
 # NOTES:(1) Drop small racial and ethnic groups with suppressed cells. Keep White, Black, and Hispanic, and overall ED asthma rates. (2) Add labels to table variables. 
@@ -106,7 +91,7 @@ joined_data %>%
 Code for output figures.
 
 ```{r, warning=FALSE, message=F, echo=TRUE}
-library(ggplot2)
+
 race.lab <- c("White", "Black", "Hispanic", "All Races")
 names(race.lab) <- c("white", "black", "hisp", "total")
 
@@ -124,7 +109,8 @@ ces50_plot <- joined_data %>%
   ggtitle("Fig. 1: County-Level ED Asthma Rates and CalEnviroScreen (CES) \nScores above/below the 50th Percentile, by Race/Ethnicity, 2020") +
   xlab("County Median CES Score compared to the Statewide 50th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
   labs(fill = "Race/Ethnicity", alpha = "CES Score relative to 50th %ile") +
-       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races")) + 
+  theme(legend.position = "none")
 ces50_plot
 
 ces75_plot <- joined_data %>% 
@@ -141,7 +127,8 @@ ces75_plot <- joined_data %>%
   ggtitle("Fig. 2: County-Level ED Asthma Rates and CalEnviroScreen (CES) \nScores above/below the 75th Percentile, by Race/Ethnicity, 2020") +
   xlab("County Median CES Score compared to the Statewide 75th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
   labs(fill = "Race/Ethnicity", alpha = "CES Score relative to 75th %ile") +
-       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))  + 
+  theme(legend.position = "none")
 ces75_plot
 
 pov_plot <- joined_data %>% 
@@ -158,7 +145,8 @@ pov_plot <- joined_data %>%
   ggtitle("Fig. 3: County-Level ED Asthma Rates and Poverty \nabove the 75th Percentile, by Race/Ethnicity, 2020") +
   xlab("County Mean Poverty above the Statewide 75th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
   labs(fill = "Race/Ethnicity", alpha = "Poverty above the 75th %ile") +
-       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))  + 
+  theme(legend.position = "none")
 pov_plot
 
 
@@ -166,15 +154,3 @@ pov_plot
 ```
 
 **INTERPRETATION OF FIGURES:** Overall, asthma ED rates are much higher among Black Californians compared to White or Hispanic Californians, and also compared to all races combined, and asthma ED rates are consistently higher in those counties with higher environmental burden (measured by median CES values above either the statewide 50th or 75th percentile) and those counties with higher levels of poverty (measured as mean poverty above the statewide 75th percentile). The interactive effect between race and either environmental burden or poverty is most pronounced for Black Californians and across both environmental measures, for Hispanic Californians and median CES values above the statewide 75th percentile measure, and for all Californians (both overall and for all three race/ethnicities examined) and the poverty measure.
-
-### Submit: 
-
-1.  Html file that is professionally prepared for presentation and published to RPubs
-
-    -   Only the necessary information is in the output (e.g., suppress entire data frame outputs but showing data structure with `str()` is okay)
-
-    -   Show your work by "echoing" code used in Rmd/Qmd file to create your tables and graphs. \`\`\`{r, echo = TRUE} in code chunk preferences.
-
-    -   Use of headers and sub headers to create an organized document
-
-    -   For this milestone please make sure code for visualizations are included in the final file
