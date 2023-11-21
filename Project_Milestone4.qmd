@@ -27,6 +27,10 @@ Please submit an Rmd or Qmd and publish an html file on RPubs with the following
 
         -   Table 1 with all relevant measures / overall, stratify by CES measure
 
+    -   At least one high quality figure as requested in the scenario
+
+        -   Figures 1-3 with race-stratified rates across CES and other measures
+
 # Joining Data
 
 Code to join data sets and provide appropriate labels for table output.
@@ -49,7 +53,7 @@ ces_score_summary <-
 names(ed_summary)
 
 # Join datasets using variable "county_name"
-# NOTES:(1) Drops small racial and ethnic groups with suppressed cells. Keep White, Black, and Hispanic, and overall ED asthma rates. (2) Add labels to table variables. 
+# NOTES:(1) Drop small racial and ethnic groups with suppressed cells. Keep White, Black, and Hispanic, and overall ED asthma rates. (2) Add labels to table variables. 
 
 joined_data <- ces_score_summary %>% 
   left_join(., ces_measures_summary, by = "county_name") %>%
@@ -75,7 +79,7 @@ str(joined_data)
 
 Code for output table.
 
-```{r}
+```{r, echo=TRUE}
 #Table Output
 joined_data %>% 
   select(-c(county_name, median_ces_abv_perc_75th, median_ces_blw_perc_25th)) %>% 
@@ -93,39 +97,79 @@ joined_data %>%
   bold_labels()
 ```
 
-**TABLE INTERPRETATION:** Counties with CES median scores above the 50th percentile appear to have higher mean PM 2.5, higher median traffic, and more poverty. Additionally, these counties have age-adjusted rates of ED asthma visits total and stratified by racial and ethnic group.
+**TABLE INTERPRETATION:** Counties with CES median scores above the 50th percentile appear to have higher mean PM 2.5, higher median traffic, and more poverty. Additionally, these counties have higher age-adjusted rates of ED asthma visits total and stratified by racial and ethnic group.
 
 # Plots
 
--   One print quality plot or chart as requested in scenario
+### Figures 1-3
 
-    -   \*Maybe do this for all measures (CES measure + specific environmental measures).
+Code for output figures.
 
-    -   CES measure (1/0) - x axis; boxplot for asthma rates among Black individuals
+```{r, warning=FALSE, message=F, echo=TRUE}
+library(ggplot2)
+race.lab <- c("White", "Black", "Hispanic", "All Races")
+names(race.lab) <- c("white", "black", "hisp", "total")
 
-    -   CES measure (1/0) - x axis; boxplot for asthma rates among white individuals
+ces50_plot <- joined_data %>% 
+  select(c(county_name, median_ces_abv_perc_50th, total, white, black, hisp)) %>% 
+  pivot_longer(!c(county_name, median_ces_abv_perc_50th), 
+               names_to = "race", values_to = "rates") %>% 
+  mutate(across(race, ~factor(., levels=c("white", "black", "hisp", "total")))) %>% 
+  ggplot(aes(x = median_ces_abv_perc_50th, y = rates)) +
+           geom_boxplot(aes(fill = race, alpha = median_ces_abv_perc_50th)) +
+            facet_grid(. ~ race, labeller = labeller(race = race.lab)) + 
+              scale_alpha_discrete(
+     range = c(0.5, 1.3),
+     guide = guide_legend(override.aes = list(fill = "black"))) +
+  ggtitle("Fig. 1: County-Level ED Asthma Rates and CalEnviroScreen (CES) \nScores above/below the 50th Percentile, by Race/Ethnicity, 2020") +
+  xlab("County Median CES Score compared to the Statewide 50th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
+  labs(fill = "Race/Ethnicity", alpha = "CES Score relative to 50th %ile") +
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))
+ces50_plot
 
-    -   CES measure (1/0) - x axis; boxplot for asthma rates among Hispanic individuals
+ces75_plot <- joined_data %>% 
+  select(c(county_name, median_ces_abv_perc_75th, total, white, black, hisp)) %>% 
+  pivot_longer(!c(county_name, median_ces_abv_perc_75th), 
+               names_to = "race", values_to = "rates") %>% 
+  mutate(across(race, ~factor(., levels=c("white", "black", "hisp", "total")))) %>% 
+  ggplot(aes(x = median_ces_abv_perc_75th, y = rates)) +
+           geom_boxplot(aes(fill = race, alpha = median_ces_abv_perc_75th)) +
+            facet_grid(. ~ race, labeller = labeller(race = race.lab)) + 
+              scale_alpha_discrete(
+     range = c(0.5, 1.3),
+     guide = guide_legend(override.aes = list(fill = "black")))  +
+  ggtitle("Fig. 2: County-Level ED Asthma Rates and CalEnviroScreen (CES) \nScores above/below the 75th Percentile, by Race/Ethnicity, 2020") +
+  xlab("County Median CES Score compared to the Statewide 75th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
+  labs(fill = "Race/Ethnicity", alpha = "CES Score relative to 75th %ile") +
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))
+ces75_plot
 
-    -   CES measure (1/0) - x axis; boxplot for asthma rates overall
+pov_plot <- joined_data %>% 
+  select(c(county_name, poverty_abv_75th, total, white, black, hisp)) %>% 
+  pivot_longer(!c(county_name, poverty_abv_75th), 
+               names_to = "race", values_to = "rates") %>% 
+  mutate(across(race, ~factor(., levels=c("white", "black", "hisp", "total")))) %>% 
+  ggplot(aes(x = poverty_abv_75th, y = rates)) +
+           geom_boxplot(aes(fill = race, alpha = poverty_abv_75th)) +
+            facet_grid(. ~ race, labeller = labeller(race = race.lab)) + 
+              scale_alpha_discrete(
+     range = c(0.5, 1.3),
+     guide = guide_legend(override.aes = list(fill = "black")))  +
+  ggtitle("Fig. 3: County-Level ED Asthma Rates and Poverty \nabove the 75th Percentile, by Race/Ethnicity, 2020") +
+  xlab("County Mean Poverty above the Statewide 75th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
+  labs(fill = "Race/Ethnicity", alpha = "Poverty above the 75th %ile") +
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))
+pov_plot
 
--   For groups of 3, one additional print quality table or plot of your choice (can support the requested data in the scenario, or answer a different question using the same data sources)
 
-1.  For each visual, include
 
-    -   Code used to generate visual
+```
 
-    -   Legend (if necessary)
+**INTERPRETATION OF FIGURES:** Overall, asthma ED rates are much higher among Black Californians compared to White or Hispanic Californians, and also compared to all races combined, and asthma ED rates are consistently higher in those counties with higher environmental burden (measured by median CES values above either the statewide 50th or 75th percentile) and those counties with higher levels of poverty (measured as mean poverty above the statewide 75th percentile). The interactive effect between race and either environmental burden or poverty is most pronounced for Black Californians and across both environmental measures, for Hispanic Californians and median CES values above the statewide 75th percentile measure, and for all Californians (both overall and for all three race/ethnicities examined) and the poverty measure.
 
-    -   1-2 sentence interpretation
+### Submit: 
 
-    -   NOTE:
-
-        -   Please make sure the visual can stand-alone, meaning it includes enough information in title, legend, and footnote so that a person who sees only the visualization could understand what is being presented.
-
-        -   Please also make sure column names, axis labels, and any other labels are meaningful and not just the name of the variable (ex: "County" rather than "county_name")
-
-2.  Html file that is professionally prepared for presentation and published to RPubs
+1.  Html file that is professionally prepared for presentation and published to RPubs
 
     -   Only the necessary information is in the output (e.g., suppress entire data frame outputs but showing data structure with `str()` is okay)
 
