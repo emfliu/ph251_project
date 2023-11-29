@@ -4,4 +4,272 @@ format: html
 editor: visual
 ---
 
-## Final Project
+# Final Project
+
+# **Problem Statement:**
+
+# 
+
+```{r, warning=FALSE, message=F, echo=FALSE}
+
+# Load in packages
+library(tidyverse)
+library(janitor)
+install.packages("gtsummary")
+library(gtsummary)
+install.packages("labelled")
+library(labelled)
+
+# Load in raw data
+ed <- read.csv('./Project_Data_Sources/scenario_3/chhs_asthma_ed.csv') %>% clean_names()
+ces_scores <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_scores_demog_2021.csv') %>% clean_names()
+ces_measures <- read.csv('./Project_Data_Sources/scenario_3/calenviroscreen_measures_2021.csv') %>% clean_names()
+
+# Data cleaning for CES SCORE file ########################################
+
+# Change county name from "Alameda County" -> "ALAMEDA"
+ces_score_updated <- ces_scores %>% 
+  mutate(county_name = str_to_upper(str_trim(str_remove(county, "County"))))
+
+# ces_score_updated %>% select(county_name) %>% distinct() #check new county name
+
+ces_score_summary <- ces_score_updated %>% group_by(county_name) %>%
+  summarize(median_ces_perc_county = median(ces_4_0_percentile, na.rm = T),
+            median_ces_abv_perc_75th = if_else(median_ces_perc_county >= 75, 1, 0),                        median_ces_abv_perc_50th = if_else(median_ces_perc_county >= 50, 1, 0),
+            median_ces_blw_perc_25th = if_else(median_ces_perc_county <= 25, 1, 0))
+
+ces_score_summary$median_ces_abv_perc_75th <- 
+  factor(ces_score_summary$median_ces_abv_perc_75th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
+
+ces_score_summary$median_ces_abv_perc_50th <- 
+  factor(ces_score_summary$median_ces_abv_perc_50th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
+
+ces_score_summary$median_ces_blw_perc_25th <- 
+  factor(ces_score_summary$median_ces_blw_perc_25th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
+
+# Data cleaning for CES MEASURES file ########################
+
+# Change county name from "Alameda" -> "ALAMEDA"
+ces_measures_updated <- ces_measures %>% 
+  mutate(county_name = str_to_upper(str_trim(california_county)))
+# ces %>% select(county_name) %>% distinct()
+
+ces_measures_summary <- ces_measures_updated %>% group_by(county_name) %>%
+  summarize(pm_25_mean = mean(pm2_5, na.rm = TRUE),
+            traffic_median = median(traffic, na.rm = TRUE), 
+            poverty_perc_mean = mean(poverty_pctl, na.rm = TRUE), 
+            poverty_abv_75th = if_else(poverty_perc_mean >= 75, 1, 0))
+
+ces_measures_summary$poverty_abv_75th <- 
+  factor(ces_measures_summary$poverty_abv_75th, 
+         levels = c(0, 1), 
+         labels = c("No", "Yes"))
+
+# Data cleaning for ED file ########################
+
+# summary(ed) # NOTE: will want to factor year
+# unique(ed$strata)
+# unique(ed$strata_name)
+# table(ed$strata_name, ed$year)
+
+# NOTE: these values are reading in oddly and need fixing plus there are different ways racial groups are ID'ed across years (Asian only used in 2019, otherwise use Asian/PI; Multi-race used in 2020 but otherwise use Multi-Race. Not sure what to do about the fact that Asian/PI and NHPI seem to be used concurrently in 2019 and 2020 - leave as is) 
+
+# unique(ed$age_group)
+# NOTE: age is also reading in oddly and need recoding
+
+ed_1 <- ed %>% 
+  mutate(str_name = case_when(
+      strata_name == "All ages" ~ "all_ages",
+      strata_name == "0\x9617 years" ~ "0_17",
+      strata_name == "18+ years" ~ "18plus",      
+      strata_name == "0\x964 years" ~ "0_4",
+      strata_name == "5\x9617 years" ~ "5_17",
+      strata_name == "18\x9664 years" ~ "18_64",
+      strata_name == "65+ years" ~ "65plus",
+      strata_name == "White" ~ "WHITE",
+      strata_name == "Black" ~ "BLACK",
+      strata_name == "Hispanic" ~ "HISP",
+      strata_name %in% c("Asian/PI", "Asian") ~ "API",
+      strata_name == "NHPI" ~ "NHPI",
+      strata_name == "AI/AN" ~ "AIAN",
+      strata_name %in% c("Multi-Race", "Multi-race") ~ "MULTI",
+      )) %>% 
+  mutate(age_grp = case_when(
+      age_group == "All ages" ~ "all_ages",
+      age_group == "0\x9617 years" ~ "0_17",
+      age_group == "18+ years" ~ "18plus",      
+      age_group == "0\x964 years" ~ "0_4",
+      age_group == "5\x9617 years" ~ "5_17",
+      age_group == "18\x9664 years" ~ "18_64",
+      age_group == "65+ years" ~ "65plus",
+  )) %>% 
+  mutate(yr=as.factor(year)) %>% 
+  select(!c(strata_name, age_group, year))
+
+# Check updated values
+# unique(ed1$str_name)
+# table(ed1$strata_name, ed1$str_name, useNA = "always")
+# unique(ed1$age_grp)
+# table(ed1$age_group, ed1$age_grp, useNA = "always")
+# unique(ed1$yr)
+
+# ed_1 %>% select(county) %>% distinct()
+# length(unique(ed$county)) #59
+
+# drop california county (overall rows)
+ed_1 <- ed_1 %>% filter(county != "CALIFORNIA") %>% rename(county_name = county)
+
+# ed %>% select(county_name) %>% distinct()
+
+# subset to years, strata (all age groups by race) of interest and pivot to have one row per county (since examining all ages combined, use age-adjusted values)
+
+ed_summary <- ed_1 %>% 
+  filter(yr == "2020") %>% 
+  filter(age_grp == "all_ages") %>% 
+  select(!c(strata, number_of_ed_visits, age_grp, yr)) %>% 
+  pivot_wider(names_from = str_name, values_from = age_adjusted_ed_visit_rate) %>% 
+  rename(TOTAL = all_ages) %>% clean_names()
+
+# Join datasets using variable "county_name"
+# NOTES:(1) Drops small racial and ethnic groups with suppressed cells. Keep White, Black, and Hispanic, and overall ED asthma rates. (2) Add labels to table variables. 
+
+joined_data <- ces_score_summary %>% 
+  left_join(., ces_measures_summary, by = "county_name") %>%
+  left_join(., ed_summary, by = "county_name") %>%
+  select(-c(api, aian, nhpi, multi)) %>% 
+  set_variable_labels(
+  median_ces_perc_county = "Median CES score percentile", 
+  median_ces_abv_perc_50th = "Median CES score, 50th percentile and above", 
+  pm_25_mean = "Mean PM2.5",
+  traffic_median = "Traffic median",
+  poverty_perc_mean = "Mean poverty",
+  poverty_abv_75th = "Mean poverty above 75th percentile",
+  total = "Total age-adjusted rate of ED asthma visits",
+  white = "Age-adjusted rate of ED asthma visits - White patients",
+  black = "Age-adjusted rate of ED asthma visits - Black patients",
+  hisp = "Age-adjusted rate of ED asthma visits - Hispanic patients"
+)
+
+#str(joined_data)
+```
+
+# Table 1
+
+```{r, warning=FALSE, message=F, echo=FALSE}
+
+#Table Output
+joined_data %>% 
+  select(-c(county_name, median_ces_abv_perc_75th, median_ces_blw_perc_25th)) %>% 
+  tbl_summary(by = median_ces_abv_perc_50th,
+              missing_text = "Rate suppressed for small cell count") %>% 
+  add_overall() %>%
+  add_n() %>%
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ 
+  "**Median CES score above 50th percentile**") %>%
+  modify_footnote(
+    all_stat_cols() ~ "Median (IQR) or Frequency (%)"
+  ) %>%
+  modify_caption("**Table 1. County Characteristics**") %>%
+  bold_labels()
+```
+
+**TABLE INTERPRETATION:** Counties with CES median scores above the 50th percentile appear to have higher mean PM 2.5, higher median traffic, and more poverty. Additionally, these counties have age-adjusted rates of ED asthma visits total and stratified by racial and ethnic group.
+
+# Plots
+
+### Figures 1-3
+
+```{r, warning=FALSE, message=F, echo=FALSE}
+
+race.lab <- c("White", "Black", "Hispanic", "All Races")
+names(race.lab) <- c("white", "black", "hisp", "total")
+
+ces50_plot <- joined_data %>% 
+  select(c(county_name, median_ces_abv_perc_50th, total, white, black, hisp)) %>% 
+  pivot_longer(!c(county_name, median_ces_abv_perc_50th), 
+               names_to = "race", values_to = "rates") %>% 
+  mutate(across(race, ~factor(., levels=c("white", "black", "hisp", "total")))) %>% 
+  ggplot(aes(x = median_ces_abv_perc_50th, y = rates)) +
+           geom_boxplot(aes(fill = race, alpha = median_ces_abv_perc_50th)) +
+            facet_grid(. ~ race, labeller = labeller(race = race.lab)) + 
+              scale_alpha_discrete(
+     range = c(0.5, 1.3),
+     guide = guide_legend(override.aes = list(fill = "black"))) +
+  ggtitle("Fig. 1: County-Level ED Asthma Rates and CalEnviroScreen (CES) \nScores above/below the 50th Percentile, by Race/Ethnicity, 2020") +
+  xlab("County Median CES Score compared to the Statewide 50th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
+  labs(fill = "Race/Ethnicity", alpha = "CES Score relative to 50th %ile") +
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races")) + 
+  theme(legend.position = "none")
+ces50_plot
+
+ces75_plot <- joined_data %>% 
+  select(c(county_name, median_ces_abv_perc_75th, total, white, black, hisp)) %>% 
+  pivot_longer(!c(county_name, median_ces_abv_perc_75th), 
+               names_to = "race", values_to = "rates") %>% 
+  mutate(across(race, ~factor(., levels=c("white", "black", "hisp", "total")))) %>% 
+  ggplot(aes(x = median_ces_abv_perc_75th, y = rates)) +
+           geom_boxplot(aes(fill = race, alpha = median_ces_abv_perc_75th)) +
+            facet_grid(. ~ race, labeller = labeller(race = race.lab)) + 
+              scale_alpha_discrete(
+     range = c(0.5, 1.3),
+     guide = guide_legend(override.aes = list(fill = "black")))  +
+  ggtitle("Fig. 2: County-Level ED Asthma Rates and CalEnviroScreen (CES) \nScores above/below the 75th Percentile, by Race/Ethnicity, 2020") +
+  xlab("County Median CES Score compared to the Statewide 75th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
+  labs(fill = "Race/Ethnicity", alpha = "CES Score relative to 75th %ile") +
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))  + 
+  theme(legend.position = "none")
+ces75_plot
+
+pov_plot <- joined_data %>% 
+  select(c(county_name, poverty_abv_75th, total, white, black, hisp)) %>% 
+  pivot_longer(!c(county_name, poverty_abv_75th), 
+               names_to = "race", values_to = "rates") %>% 
+  mutate(across(race, ~factor(., levels=c("white", "black", "hisp", "total")))) %>% 
+  ggplot(aes(x = poverty_abv_75th, y = rates)) +
+           geom_boxplot(aes(fill = race, alpha = poverty_abv_75th)) +
+            facet_grid(. ~ race, labeller = labeller(race = race.lab)) + 
+              scale_alpha_discrete(
+     range = c(0.5, 1.3),
+     guide = guide_legend(override.aes = list(fill = "black")))  +
+  ggtitle("Fig. 3: County-Level ED Asthma Rates and Poverty \nabove the 75th Percentile, by Race/Ethnicity, 2020") +
+  xlab("County Mean Poverty above the Statewide 75th Percentile") + ylab("Age-Adjusted ED Asthma Rates") + 
+  labs(fill = "Race/Ethnicity", alpha = "Poverty above the 75th %ile") +
+       scale_fill_discrete(labels=c("White", "Black", "Hispanic", "All Races"))  + 
+  theme(legend.position = "none")
+pov_plot
+```
+
+**INTERPRETATION OF FIGURES:** Overall, asthma ED rates are much higher among Black Californians compared to White or Hispanic Californians, and also compared to all races combined, and asthma ED rates are consistently higher in those counties with higher environmental burden (measured by median CES values above either the statewide 50th or 75th percentile) and those counties with higher levels of poverty (measured as mean poverty above the statewide 75th percentile). The interactive effect between race and either environmental burden or poverty is most pronounced for Black Californians and across both environmental measures, for Hispanic Californians and median CES values above the statewide 75th percentile measure, and for all Californians (both overall and for all three race/ethnicities examined) and the poverty measure.
+
+-   Visualizations (at least one per team member)
+
+    -   One print quality table as requested in scenario
+
+    -   One print quality plot or chart as requested in scenario
+
+    -   For groups of 3, one additional print quality table or plot of your choice (can support the requested data in the scenario, or answer a different question using the same data sources)
+
+-   Problem Statement (1-2 paragraphs)
+
+-   Methods, for each data source
+
+    -   Source
+
+    -   Years and/or dates of data
+
+    -   Description of cleaning and creating new variables
+
+    -   Analytic methods
+
+-   Results
+
+-   Discussion (interpretation of results)
+
+-   Maximum of 1,000 words
