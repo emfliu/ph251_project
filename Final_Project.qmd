@@ -153,7 +153,7 @@ joined_data <- ces_score_summary %>%
 #str(joined_data)
 ```
 
-#### *Liza Lutker and Emily Liu *
+#### *Liza Lutker and Emily Liu*
 
 #### *PH 251 Fall 2023*
 
@@ -161,25 +161,25 @@ joined_data <- ces_score_summary %>%
 
 Asthma represents a significant health burden in California. In 2019, nearly 6 million Californians had been diagnosed with asthma at some point in their lives, with costs of asthma reaching \$13 billion annually (1). Asthma is a complex disease with multiple social, environmental, and genetic contributors to its prevalence and exacerbation. Multiple environmental burdens may be relevant in isolation, but understanding the cumulative effect of environmental burdens on asthma is also critical. Poverty, a reflection of the social environment, is also likely to play an important role, especially concerning asthma emergency department (ED) visits, as ED visits for asthma may represent the only care option for those lacking access to a regular provider. Finally, because ongoing and historical structural racism has influenced various environmental and social factors, race/ethnicity may also play a role in asthma burden. \
 \
-In this analysis, we sought to better understand the relationship between various environmental variables, poverty, and race and the outcome of asthma ED visits at a county level in California in the year 2020. Specifically, we are investigating the county-level relationship between asthma ED visits and measures of poverty, fine particulate matter (PM2.5), traffic density, and a cumulative environmental burden measure from CalEnviroScreen. We are further interested in the interaction between these various \"exposures\" and race/ethnicity as they relate to asthma ED visits.
+In this analysis, we sought to better understand the relationship between various environmental variables, poverty, and race and the outcome of asthma ED visits at a county level in California in the year 2020. Specifically, we are investigating the county-level relationship between asthma ED visits and measures of poverty, fine particulate matter (PM2.5), traffic density, and a cumulative environmental burden measure from CalEnviroScreen. We are further interested in the interaction between these various "exposures" and race/ethnicity as they relate to asthma ED visits.
 
 ## Methods
 
 ### Data Sources
 
-This analysis utilized data from three different sources: two exposure files and one outcome file. Both exposure files contain 2021 data and come from CalEnviroScreen4.0 dataset from the California Environmental Protection Agency (CalEPA). The first exposure file (2021 CalEnviroscreen Measures) contains multiple specific environmental measures and the second (2021 CalEnviroScreen Scores) contains overall CalEnviroScreen (CES) scores and demographics. Both of these exposure files provide data at the census-tract level (accompanied by county of tract location) and use 2019 ACS estimates for demographics. The outcome dataset is from California Health and Human Services Department and has annual age-adjusted asthma ED visits/rates by county from 2015 through 2020. 
+This analysis utilized data from three different sources: two exposure files and one outcome file. Both exposure files contain 2021 data and come from CalEnviroScreen4.0 from the California Environmental Protection Agency (CalEPA). The first exposure file (2021 CalEnviroscreen Measures) contains multiple specific environmental measures and the second (2021 CalEnviroScreen Scores) contains overall CalEnviroScreen (CES) scores and demographics. Both of these exposure files provide data at the census-tract level (accompanied by county of tract location) and use 2019 ACS estimates for demographics. The outcome dataset is from California Health and Human Services Department and has annual age-adjusted asthma ED visits/rates by county from 2015 through 2020. 
 
 ### Data Cleaning and Creation of New Variables
 
-Data from the three sources can be linked through the county name. Therefore, we recoded the values to be uniform (e.g. ALAMEDA) across the two exposure and one outcome files using string manipulation. This allowed us to join the three data files into one analytic dataset. 
+Data from the three sources can be linked through the county name. Therefore, we recoded the county values to be uniform (e.g. ALAMEDA) across the two exposure and one outcome files using string manipulation. This allowed us to join the three data files into one analytic dataset. 
 
-Before joining, in addition to the cleaning the county name, data cleaning was performed on each data set. In the **2021 CalEnviroScreen Scores**, we created four new variables by county that described the county mean CES percentile score and three subsequent indicator variables that denoted whether the county mean CES percentile score was above the 75th percentile, above the 50th percentile, and below the 25th percentile, respectively. In the **2021 CalEnviroscreen Measures**, we created an additional four variables that described the county mean PM 2.5 level, mean traffic density, the mean percentile of poverty, and an indicator variable that denoted whether the county mean percentile of poverty was above the 75th percentile. Finally, in the **Emergency Department Asthma Rates from the California Health and Human Services Department**, we filtered the values to 2020, dropped the county value of \"CALIFORNIA\" because it was an overall total for all counties in California, and pivoted the table to have one row per county. Additional cleaning was needed for the age categories due to inconsistencies in the CSV importing process. 
+Before joining, in addition to the cleaning the county names, data cleaning was performed on each data set. In the **2021 CalEnviroScreen Scores**, we created four new variables by county that described the county mean CES percentile score and three subsequent indicator variables that denoted whether the county mean CES percentile score was above the 75th percentile, above the 50th percentile, and below the 25th percentile, respectively. In the **2021 CalEnviroscreen Measures**, we created an additional four variables that described the county mean PM2.5 level, mean traffic density, the mean percentile of poverty, and an indicator variable that denoted whether the county mean percentile of poverty was above the 75th percentile. Finally, in the **Emergency Department Asthma Rates from the California Health and Human Services Department**, we filtered the values to 2020, dropped the county value of "CALIFORNIA" because it was an overall total for all counties in California, and pivoted the table to have one row per county. Additional cleaning was needed for the age categories due to inconsistencies in the CSV importing process. 
 
 A data dictionary for the final analytic dataset is provided in the appendix. 
 
 ### Analytic Methods
 
-First, we examined our analytic dataset using descriptive statistics. We employed mean and standard deviation for continuous variables and count and percent for categorical variables. This allowed us to identify missing data and data inconsistencies. Specifically in the emergency department data, there were many missing values in the race-stratified data due to count and rate suppression in accordance with data de-identification guidelines. Additionally, there were discrepancies in race/ethnicity categorizations of \"Asian\", \"Asian and Pacific Islander\" and \"Native Hawaiian and Pacific Islander\" from year to year that decreased our confidence in its accuracy. Therefore, we decided to focus our primary analysis on age-adjusted rates for the overall population and for White, Black, and Hispanic patients, separately. 
+First, we examined our analytic dataset using descriptive statistics. We employed mean and standard deviation for continuous variables and count and percent for categorical variables. This allowed us to identify missing data and data inconsistencies. Specifically in the emergency department data, there were many missing values in the race-stratified data due to count and rate suppression in accordance with data de-identification guidelines. Additionally, there were discrepancies in race/ethnicity categorizations of "Asian", "Asian and Pacific Islander" and "Native Hawaiian and Pacific Islander" from year to year that decreased our confidence in its accuracy. Therefore, we decided to focus our primary analysis on age-adjusted rates for the overall population and for White, Black, and Hispanic patients, separately. 
 
 Our primary analysis includes a descriptive table (Table 1) and box plots examining asthma ED visit rates by county both overall and stratified for 3 race/ethnicity groups: White, Black and Hispanic (Figures 1-3). 
 
@@ -208,7 +208,7 @@ joined_data %>%
   bold_labels()
 ```
 
-Figures 1-3 each show asthma ED visit rates by county both overall and stratified for 3 racial ethnic groups: White, Black and Hispanic. Figure 1 shows how these rates differ depending on whether the median county-CES score is above or below the 50th percentile for the state and Figure 2 shows the same except the comparison is whether the median county-CES score is above or below the 75th percentile for the state. Figure 3 shows how asthma ED visit rates differ depending on whether the mean county-level poverty rate is above the statewide 75th percentile.
+Figures 1-3 each show asthma ED visit rates by county both overall and stratified for 3 racial/ethnic groups: White, Black and Hispanic. Figure 1 shows how these rates differ depending on whether the median county-CES score is above or below the 50th percentile for the state, and Figure 2 shows the same except the comparison is whether the median county-CES score is above or below the 75th percentile for the state. Figure 3 shows how asthma ED visit rates differ depending on whether the mean county-level poverty rate is above the statewide 75th percentile.
 
 ```{r, warning=FALSE, message=F, echo=FALSE}
 
@@ -270,19 +270,19 @@ pov_plot <- joined_data %>%
 pov_plot
 ```
 
-Overall, asthma ED rates are much higher among Black Californians compared to White or Hispanic Californians, and also compared to all races combined. Asthma ED rates are consistently higher in those counties with higher environmental burden (measured by median CES values above either the statewide 50th or 75th percentile) and those counties with higher levels of poverty (measured as mean poverty above the statewide 75th percentile). The interactive effect between race and either environmental burden or poverty is most pronounced for Black Californians and across both environmental measures, for Hispanic Californians and median CES values above the statewide 75th percentile measure, and for all Californians (both overall and for all three race/ethnicities examined) and the poverty measure.
+Overall, asthma ED rates are much higher among Black Californians compared to White or Hispanic Californians, and also compared to all races combined. Asthma ED rates are consistently higher in those counties with higher environmental burden (measured by median CES values above either the statewide 50th or 75th percentile) and those counties with higher levels of poverty (measured as mean poverty above the statewide 75th percentile). The interactive effect between race/ethnicity and either environmental burden or poverty is most pronounced for Black Californians across both environmental measures, for Hispanic Californians and median CES values above the statewide 75th percentile measure, and for all Californians (both overall and for all three race/ethnicities examined) and the poverty measure.
 
 ## Discussion
 
 There is substantial variation in asthma ED visit rates across counties in California and some counties may be in need of greater resources for prevention and management. Our analysis shows that resources should be targeted to counties with high overall environmental burden (as measured by the overall CES score), high levels of fine particulate matter (PM2.5), high traffic density, or high levels of poverty. These might be counties that would receive increased funding for asthma education, environmental trigger reduction programs, or free primary asthma care for low-income residents. 
 
-The substantial racial disparities in asthma ED visit rates across counties, with Black populations experiencing much higher rates than White or Hispanic populations, is also of grave concern. The interactive effect of adverse environmental exposures and race, especially for Black populations, provides an indication that resources might need to be even more targeted within each county. Targeted resources could include culturally-relevant education campaigns, environmental interventions (like air cleaners) in neighborhoods with high proportions of Black residents, or structural interventions like providing a universal basic income to Black residents in environmentall- burdened communities. 
+The substantial racial disparities in asthma ED visit rates across counties, with Black populations experiencing much higher rates than White or Hispanic populations, is also of grave concern. The interactive effect of adverse environmental exposures and race, especially for Black populations, provides an indication that resources might need to be even more targeted within each county. Targeted resources could include culturally-relevant education campaigns, environmental interventions (like air cleaners) in neighborhoods with high proportions of Black residents, or structural interventions like providing a universal basic income to Black residents in environmentally-burdened communities. 
 
 ### Limitations
 
 While the findings from this analysis provide a strong indication of the importance of social and environmental factors in driving high asthma ED visit rates, and that those rates vary substantially by race and ethnicity, there are some significant limitations to this work that should be addressed in future work. 
 
-To start, while the environmental variables were provided at a census tract level, these exposures needed to be aggregated to the county level to match the ED visit data. This aggregation results in the loss of a significant amount of spatial variation in the exposure data and could result in communities with high environmental burden \"getting lost\" in the countywide average if overall environmental burdens in the county are low. Ideally, ED visit data could be obtained at the census-tract or zip code level to help avoid this exposure misclassification problem. 
+To start, while the environmental variables were provided at a census tract level, these exposures needed to be aggregated to the county level to match the ED visit data. This aggregation results in the loss of a significant amount of spatial variation in the exposure data and could result in communities with high environmental burden "getting lost" in the countywide average if overall environmental burdens in the county are low. Ideally, ED visit data could be obtained at the census-tract or zip code level to help avoid this exposure misclassification problem. 
 
 Next, several issues around the race/ethnicity data in the ED visit data set precluded a more full analysis of racial and ethnic disparities. First are issues surrounding small population sizes and suppressed data that precluded us from examining data for groups like American Indians and Alaska Natives, even though this racial/ethnic group has the highest asthma prevalence in California (2). Second are issues surrounding the categorization of racial and ethnic groups, especially for populations grouped in the ED dataset as either Asian, Native Hawaiian (NH) or Pacific Islander (PI). In 2020 (the year our analysis focused on), data were provided for both Asian/PI and NHPI groupings, making it unclear which category PI individuals were counted under. Because of this complication, we had to entirely exclude these three important racial/ethnic categories. Future analyses would benefit from greater clarity about how racial/ethnic groups are defined, and also, it would be beneficial to combine more than one year of data in order to avoid small cell size suppression. 
 
@@ -290,26 +290,26 @@ Finally, while this descriptive analysis provided some insight into the correlat
 
 ## Works Cited
 
-1.  \"Asthma in California.\" California Department of Public Health, California Breathing. April 2023. Accessed 29 Nov 2023. [https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHIB/CPE/CDPH%20Document%20Library/CA_Asthma_2021-Infographic.pdf](https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHIB/CPE/CDPH%20Document%20Library/CA_Asthma_2021-Infographic.pdf?TSPD_101_R0=087ed344cfab200006b8f1afc02676f830f59341391ec30e0845cbc04523e9fb6d09a1cb4f3697bd087192d7ae1430005611606d7ae456d77b23ea30916b7dc140363188a4cb37e8d2d440cd872edb80c0aa48faca908e200304a834a5965fee)\"
+1.  "Asthma in California." California Department of Public Health, California Breathing. April 2023. Accessed 29 Nov 2023. [https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHIB/CPE/CDPH%20Document%20Library/CA_Asthma_2021-Infographic.pdf](https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHIB/CPE/CDPH%20Document%20Library/CA_Asthma_2021-Infographic.pdf?TSPD_101_R0=087ed344cfab200006b8f1afc02676f830f59341391ec30e0845cbc04523e9fb6d09a1cb4f3697bd087192d7ae1430005611606d7ae456d77b23ea30916b7dc140363188a4cb37e8d2d440cd872edb80c0aa48faca908e200304a834a5965fee)"
 
-2.  Asthma Prevalence  in California: A Surveillance Report.\" California Department of Public Health, California Breathing. January 2017. Accessed 2 Dec 2023. <https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHIB/CPE/CDPH%20Document%20Library/Asthma_Surveillance_in_CA_Report_2017.pdf> 
+2.  Asthma Prevalence  in California: A Surveillance Report." California Department of Public Health, California Breathing. January 2017. Accessed 2 Dec 2023. <https://www.cdph.ca.gov/Programs/CCDPHP/DEODC/EHIB/CPE/CDPH%20Document%20Library/Asthma_Surveillance_in_CA_Report_2017.pdf> 
 
 ## Appendix
 
 ### Data Dictionary
 
-| Variable Name            | Type      | Description                                                                                                 |
-|----------------------|------------|--------------------------------------|
-| county_name              | character | name of California county in all caps format (e.g. "ALAMEDA")                                               |
-| median_ces_perc_county   | num       | median CES percentile score by county                                                                       |
-| median_ces_abv_perc_75th | factor    | flag that indicates if the county median CES percentile score is equal to or **above** the 75th percentile  |
-| median_ces_abv_perc_50th | factor    | flag that indicates if the county median CES percentile score is equal to or **above** the 50th percentile  |
-| median_ces_blw_perc_25th | factor    | flag that indicates if the county median CES percentile score is equal to or **below** the 25th percentile  |
-| pm_25_mean               | num       | county mean PM 2.5 value                                                                                    |
-| traffic_median           | num       | county median traffic value                                                                                 |
-| poverty_perc_mean        | num       | county mean of poverty percentile                                                                           |
-| poverty_abv_75th         | factor    | flag that indicates if the county mean poverty percentile is equal to or above the 75th percentile          |
-| total                    | num       | age-adjusted rate of ED visits for all racial and ethnic groups                                             |
-| white                    | num       | age-adjusted rate of ED visits for racial and ethnic group of White                                         |
-| black                    | num       | age-adjusted rate of ED visits for racial and ethnic group of Black                                         |
-| hisp                     | num       | age-adjusted rate of ED visits for racial and ethnic group of Hispanic                                      |
+| Variable Name            | Type      | Description                                                                                                |
+|--------------------------|-----------|------------------------------------------------------------------------------------------------------------|
+| county_name              | character | name of California county in all caps format (e.g. "ALAMEDA")                                              |
+| median_ces_perc_county   | num       | median CES percentile score by county                                                                      |
+| median_ces_abv_perc_75th | factor    | flag that indicates if the county median CES percentile score is equal to or **above** the 75th percentile |
+| median_ces_abv_perc_50th | factor    | flag that indicates if the county median CES percentile score is equal to or **above** the 50th percentile |
+| median_ces_blw_perc_25th | factor    | flag that indicates if the county median CES percentile score is equal to or **below** the 25th percentile |
+| pm_25_mean               | num       | county mean PM 2.5 value                                                                                   |
+| traffic_median           | num       | county median traffic value                                                                                |
+| poverty_perc_mean        | num       | county mean of poverty percentile                                                                          |
+| poverty_abv_75th         | factor    | flag that indicates if the county mean poverty percentile is equal to or above the 75th percentile         |
+| total                    | num       | age-adjusted rate of ED visits for all racial and ethnic groups                                            |
+| white                    | num       | age-adjusted rate of ED visits for racial and ethnic group of White                                        |
+| black                    | num       | age-adjusted rate of ED visits for racial and ethnic group of Black                                        |
+| hisp                     | num       | age-adjusted rate of ED visits for racial and ethnic group of Hispanic                                     |
